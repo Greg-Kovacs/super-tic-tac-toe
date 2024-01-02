@@ -1,0 +1,19 @@
+{
+	"name": "super-tic-tac-toe-2",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "parcel src/index.html",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"parcel": "^2.10.3",
+		"phaser": "^3.70.0"
+	},
+	"devDependencies": {
+		"process": "^0.11.10"
+	}
+}
