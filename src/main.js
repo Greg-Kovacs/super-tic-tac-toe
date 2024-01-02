@@ -12,4 +12,4 @@ const config = {
 
 const game = new Phaser.Game(config);
 game.scene.add("game", Game);
-game.scene.start("game");
+game.scene.start("game", { width: WIDTH, height: HEIGHT });
