@@ -59,7 +59,7 @@ export default class Game extends Phaser.Scene {
 		): GameObjects.Shape[] {
 			let array: GameObjects.Shape[] = [];
 
-			for (let i = 0; i < 2; i++) {
+			/*for (let i = 0; i < 2; i++) {
 				const line = this.add.rectangle(
 					this.WIDTH / 3 + i * 200,
 					this.HEIGHT / 2,
@@ -68,9 +68,9 @@ export default class Game extends Phaser.Scene {
 					0x000000
 				);
 				array.push(line);
-			}
+			}*/
 
-			for (let i = 0; i < 2; i++) {
+			/*for (let i = 0; i < 2; i++) {
 				this.add.rectangle(
 					this.WIDTH / 2,
 					this.HEIGHT / 3 + i * 200,
@@ -78,7 +78,7 @@ export default class Game extends Phaser.Scene {
 					20,
 					0x000000
 				);
-			}
+			}*/
 
 			return array;
 		}
