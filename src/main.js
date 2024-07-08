@@ -20,6 +20,7 @@ const config = {
 const game = new Phaser.Game(config);
 const GRIDLINETHICKNESS = 5;
 const CHARLINETHICKNESS = 20;
+const PADDING = 100;
 const point = {
 	x: 0,
 	y: 0,
@@ -31,7 +32,12 @@ const result = [
 	['-', '-', '-'],
 	['-', '-', '-'],
 ];
-let currentChar = 'x';
+let currentChar = 'o';
+let isGameOver = false;
+let resultText;
+let startButtonText;
+
+const events = new Phaser.Events.EventEmitter();
 
 function preload() {}
 
@@ -48,43 +54,103 @@ function create() {
 			cells[i].push(rectangle);
 
 			rectangle.on('pointerup', () => {
-				//console.log('grid:', i, j);
-				//console.log('game object:', rectangle);
-				//console.log(this);
-				placeChar(i, j, this);
+				placeChar(i, j);
 			});
 		}
 	}
+
+	resultText = this.add.text(0, 0, '', {
+		fontSize: '32px',
+		fill: '#000000',
+		fontFamily: 'Arial',
+	});
+
+	startButtonText = this.add
+		.text(400, 300, 'Start New Game', {
+			fontSize: '32px',
+			fill: '#ffffff',
+			backgroundColor: '#0000ff',
+			padding: { x: 10, y: 5 },
+			align: 'center',
+			fontFamily: 'Arial',
+		})
+		.setOrigin(0.5)
+		.setInteractive();
+
+	startButtonText.on('pointerover', () =>
+		startButtonText.setStyle({ fill: '#ff0' })
+	);
+	startButtonText.on('pointerout', () =>
+		startButtonText.setStyle({ fill: '#fff' })
+	);
+	startButtonText.on('pointerdown', () => startGame());
 
 	// Redraw grid on resize
 	this.scale.on('resize', drawGrid, this);
 	this.scale.on('resize', addGridObjects, this);
 	this.scale.on('resize', drawGridCharacters, this);
+	this.scale.on('resize', drawText, this);
+
+	events.on('charPlaced', drawGridCharacters, this);
 }
 
-function placeChar(i, j, scene) {
-	if (result[i][j] === '-') {
+function update() {}
+
+function startGame() {
+	console.log('start');
+}
+
+function placeChar(i, j) {
+	if (currentChar === 'x') {
+		currentChar = 'o';
+	} else {
+		currentChar = 'x';
+	}
+
+	if (!isGameOver && result[i][j] === '-') {
 		result[i][j] = currentChar;
-		console.log(result);
-		if (currentChar === 'x') {
-			currentChar = 'o';
-		} else {
-			currentChar = 'x';
-		}
-		console.log('next: ' + currentChar);
-		console.log(scene);
-		drawGridCharacters(scene);
+		checkResult();
+	}
+	events.emit('charPlaced', result);
+}
+
+function checkResult() {
+	console.log('checking...');
+	console.log(result);
+	if (
+		(result[0][0] === result[0][1] &&
+			result[0][1] === result[0][2] &&
+			result[0][0] !== '-') ||
+		(result[1][0] === result[1][1] &&
+			result[1][1] === result[1][2] &&
+			result[1][1] !== '-') ||
+		(result[2][0] === result[2][1] &&
+			result[2][1] === result[2][2] &&
+			result[2][2] !== '-') ||
+		(result[0][0] === result[1][0] &&
+			result[1][0] === result[2][0] &&
+			result[0][0] !== '-') ||
+		(result[0][1] === result[1][1] &&
+			result[1][1] === result[2][1] &&
+			result[1][1] !== '-') ||
+		(result[0][2] === result[1][2] &&
+			result[1][2] === result[2][2] &&
+			result[2][2] !== '-') ||
+		(result[0][0] === result[1][1] &&
+			result[1][1] === result[2][2] &&
+			result[1][1] !== '-') ||
+		(result[2][0] === result[1][1] &&
+			result[1][1] === result[0][2] &&
+			result[1][1] !== '-')
+	) {
+		console.log(currentChar + ' won');
+		isGameOver = true;
+		drawText();
 	}
 }
 
-function update() {
-	// Game logic updates if needed
-}
-
 function drawGrid() {
-	const padding = 10;
-
-	sideLength = Math.min(this.scale.width, this.scale.height) - padding * 2;
+	sideLength = Math.min(this.scale.width, this.scale.height) - PADDING * 2;
 
 	point.x = (this.scale.width - sideLength) / 2;
 	point.y = (this.scale.height - sideLength) / 2;
@@ -199,4 +265,12 @@ function drawGridCharacters() {
 			}
 		}
 	}
+}
+
+function drawText() {
+	resultText.setPosition(point.x, point.y - 2 * 32);
+	if (isGameOver) {
+		resultText.setText(currentChar.toUpperCase() + ' won');
+	}
+	startButtonText.setPosition(point.x + 500, point.y - 2 * 32);
 }
