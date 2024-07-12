@@ -66,23 +66,15 @@ function create() {
 	});
 
 	startButtonText = this.add
-		.text(400, 300, 'Start New Game', {
+		.text(0, 0, '', {
 			fontSize: '32px',
-			fill: '#ffffff',
-			backgroundColor: '#0000ff',
-			padding: { x: 10, y: 5 },
+			fill: '#000000',
+			backgroundColor: '#000000',
 			align: 'center',
 			fontFamily: 'Arial',
 		})
-		.setOrigin(0.5)
 		.setInteractive();
 
-	startButtonText.on('pointerover', () =>
-		startButtonText.setStyle({ fill: '#ff0' })
-	);
-	startButtonText.on('pointerout', () =>
-		startButtonText.setStyle({ fill: '#fff' })
-	);
 	startButtonText.on('pointerdown', () => startGame());
 
 	// Redraw grid on resize
@@ -97,7 +89,18 @@ function create() {
 function update() {}
 
 function startGame() {
-	console.log('start');
+	console.log('start game');
+
+	result[0] = ['-', '-', '-'];
+	result[1] = ['-', '-', '-'];
+	result[2] = ['-', '-', '-'];
+
+	isGameOver = false;
+	resultText.setText('');
+	startButtonText.setText('');
+	startButtonText.setPadding({ x: 0 });
+
+	currentChar = 'o';
 }
 
 function placeChar(i, j) {
@@ -269,8 +272,18 @@ function drawGridCharacters() {
 
 function drawText() {
 	resultText.setPosition(point.x, point.y - 2 * 32);
+
 	if (isGameOver) {
 		resultText.setText(currentChar.toUpperCase() + ' won');
+
+		startButtonText.setText('Start New Game');
+		startButtonText.setBackgroundColor('#0000ff');
+		startButtonText.setFill('#ffffff');
+		startButtonText.setPadding({ x: 10 });
 	}
-	startButtonText.setPosition(point.x + 500, point.y - 2 * 32);
+
+	startButtonText.setPosition(
+		point.x + resultText.width + PADDING / 4,
+		point.y - 2 * 32
+	);
 }
