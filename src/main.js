@@ -1,5 +1,6 @@
 import Phaser, { Scale } from 'phaser';
-import Game from './scenes/game';
+import Menu from './scenes/menuScene.ts';
+import Game from './scenes/gameScene.ts';
 
 const config = {
 	type: Phaser.AUTO,
@@ -33,9 +34,11 @@ const result = [
 	['-', '-', '-'],
 ];
 let currentChar = 'o';
-let isGameOver = false;
+let isGameOver = true;
 let resultText;
-let startButtonText;
+let pvpButtonText;
+let pvcButtonText;
+let isPvp = true;
 
 const events = new Phaser.Events.EventEmitter();
 
@@ -59,13 +62,7 @@ function create() {
 		}
 	}
 
-	resultText = this.add.text(0, 0, '', {
-		fontSize: '32px',
-		fill: '#000000',
-		fontFamily: 'Arial',
-	});
-
-	startButtonText = this.add
+	pvpButtonText = this.add
 		.text(0, 0, '', {
 			fontSize: '32px',
 			fill: '#000000',
@@ -75,51 +72,101 @@ function create() {
 		})
 		.setInteractive();
 
-	startButtonText.on('pointerdown', () => startGame());
+	pvpButtonText.on('pointerdown', () => startGame(true));
 
-	// Redraw grid on resize
-	this.scale.on('resize', drawGrid, this);
-	this.scale.on('resize', addGridObjects, this);
-	this.scale.on('resize', drawGridCharacters, this);
-	this.scale.on('resize', drawText, this);
+	pvcButtonText = this.add
+		.text(0, 0, '', {
+			fontSize: '32px',
+			fill: '#000000',
+			backgroundColor: '#000000',
+			align: 'center',
+			fontFamily: 'Arial',
+		})
+		.setInteractive();
 
-	events.on('charPlaced', drawGridCharacters, this);
+	pvcButtonText.on('pointerdown', () => startGame(false));
+
+	// redraw game on changes
+	this.scale.on('resize', drawGame, this);
+	events.on('charPlaced', drawGame, this);
 }
 
 function update() {}
 
-function startGame() {
-	console.log('start game');
+function startGame(isPvp_) {
+	isPvp = isPvp_;
 
 	result[0] = ['-', '-', '-'];
 	result[1] = ['-', '-', '-'];
 	result[2] = ['-', '-', '-'];
 
 	isGameOver = false;
-	resultText.setText('');
-	startButtonText.setText('');
-	startButtonText.setPadding({ x: 0 });
+
+	pvpButtonText.setText('');
+	pvpButtonText.setPadding({ x: 0 });
+	pvcButtonText.setText('');
+	pvcButtonText.setPadding({ x: 0 });
 
 	currentChar = 'o';
-}
 
-function placeChar(i, j) {
-	if (currentChar === 'x') {
-		currentChar = 'o';
-	} else {
-		currentChar = 'x';
-	}
-
-	if (!isGameOver && result[i][j] === '-') {
-		result[i][j] = currentChar;
-		checkResult();
-	}
 	events.emit('charPlaced', result);
 }
 
+function placeChar(i, j) {
+	if (isPvp) {
+		if (currentChar === 'x') {
+			currentChar = 'o';
+		} else {
+			currentChar = 'x';
+		}
+
+		if (!isGameOver && result[i][j] === '-') {
+			result[i][j] = currentChar;
+			checkResult();
+		}
+	} else {
+		if (currentChar === 'o') {
+			currentChar = 'x';
+		}
+
+		if (!isGameOver && result[i][j] === '-') {
+			result[i][j] = currentChar;
+			checkResult();
+		}
+
+		if (!isGameOver) {
+			currentChar = 'o';
+
+			let i_ = Math.floor(Math.random() * 3);
+			let j_ = Math.floor(Math.random() * 3);
+
+			while (result[i_][j_] !== '-') {
+				i_ = Math.floor(Math.random() * 3);
+				j_ = Math.floor(Math.random() * 3);
+			}
+
+			result[i_][j_] = currentChar;
+			checkResult();
+		}
+	}
+
+	events.emit('charPlaced', result);
+}
+
+function drawGame() {
+	const graphics = this.graphics;
+	const scale = this.scale;
+	graphics.clear();
+
+	drawGrid(graphics, scale);
+	addGridObjects();
+	drawGridCharacters(graphics);
+	drawText();
+}
+
 function checkResult() {
-	console.log('checking...');
-	console.log(result);
+	//console.log('checking...');
+	//console.log(result);
 	if (
 		(result[0][0] === result[0][1] &&
 			result[0][1] === result[0][2] &&
@@ -152,13 +199,12 @@ function checkResult() {
 	}
 }
 
-function drawGrid() {
-	sideLength = Math.min(this.scale.width, this.scale.height) - PADDING * 2;
+function drawGrid(graphics, scale) {
+	sideLength = Math.min(scale.width, scale.height) - PADDING * 2;
 
-	point.x = (this.scale.width - sideLength) / 2;
-	point.y = (this.scale.height - sideLength) / 2;
+	point.x = (scale.width - sideLength) / 2;
+	point.y = (scale.height - sideLength) / 2;
 
-	const graphics = this.graphics;
 	graphics.lineStyle(GRIDLINETHICKNESS, 0x000000);
 	graphics.clear();
 
@@ -205,8 +251,7 @@ function addGridObjects() {
 	}
 }
 
-function drawGridCharacters() {
-	const graphics = this.graphics;
+function drawGridCharacters(graphics) {
 	if (graphics) {
 		graphics.lineStyle(CHARLINETHICKNESS, 0x000000);
 
@@ -271,19 +316,21 @@ function drawGridCharacters() {
 }
 
 function drawText() {
-	resultText.setPosition(point.x, point.y - 2 * 32);
-
 	if (isGameOver) {
-		resultText.setText(currentChar.toUpperCase() + ' won');
+		pvpButtonText.setText('Player vs Player');
+		pvpButtonText.setBackgroundColor('#0000ff');
+		pvpButtonText.setFill('#ffffff');
+		pvpButtonText.setPadding({ x: 10 });
 
-		startButtonText.setText('Start New Game');
-		startButtonText.setBackgroundColor('#0000ff');
-		startButtonText.setFill('#ffffff');
-		startButtonText.setPadding({ x: 10 });
+		pvcButtonText.setText('Player vs Computer');
+		pvcButtonText.setBackgroundColor('#ff0000');
+		pvcButtonText.setFill('#ffffff');
+		pvcButtonText.setPadding({ x: 10 });
 	}
 
-	startButtonText.setPosition(
-		point.x + resultText.width + PADDING / 4,
+	pvpButtonText.setPosition(point.x, point.y - 2 * 32);
+	pvcButtonText.setPosition(
+		point.x + pvpButtonText.width + GRIDLINETHICKNESS,
 		point.y - 2 * 32
 	);
 }
