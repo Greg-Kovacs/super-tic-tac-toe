@@ -137,17 +137,19 @@ export default class MenuScene extends Phaser.Scene {
 	gameModeItemClicked(menuItem: GameModesEnum) {
 		console.log(menuItem);
 		switch (menuItem) {
-			case GameModesEnum.tttPvp:
-				console.log('tttPvp');
-				break;
 			case GameModesEnum.tttPvc:
+				this.scene.start('GameScene', { gameMode: GameModesEnum.tttPvc });
 				console.log('tttPvc');
 				break;
-			case GameModesEnum.stttPvp:
-				console.log('stttPvp');
+			case GameModesEnum.tttPvp:
+				this.scene.start('GameScene', { gameMode: GameModesEnum.tttPvp });
+				console.log('tttPvp');
 				break;
 			case GameModesEnum.stttPvc:
 				console.log('stttPvc');
+				break;
+			case GameModesEnum.stttPvp:
+				console.log('stttPvp');
 				break;
 
 			default:
@@ -162,9 +164,9 @@ enum MenuItemTextEnum {
 	theme = 'Theme',
 }
 
-enum GameModesEnum {
-	tttPvp = 'Tic-Tac-Toe PvP',
+export enum GameModesEnum {
 	tttPvc = 'Tic-Tac-Toe PvC',
-	stttPvp = 'Super Tic-Tac-Toe PvP',
+	tttPvp = 'Tic-Tac-Toe PvP',
 	stttPvc = 'Super Tic-Tac-Toe PvC',
+	stttPvp = 'Super Tic-Tac-Toe PvP',
 }

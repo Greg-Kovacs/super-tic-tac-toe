@@ -1,28 +1,26 @@
 import Phaser, { GameObjects } from 'phaser';
+import { GameModesEnum } from './menuScene';
 
 const GRIDLINETHICKNESS = 5;
 const CHARLINETHICKNESS = 20;
 const PADDING = 100;
 
-export default class GameScene extends Phaser.Scene {
-	constructor() {
-		super({ key: 'GameScene' });
-		console.log('GameScene running');
-	}
+interface GameSceneProps {
+	gameMode: GameModesEnum;
+}
 
+export default class GameScene extends Phaser.Scene {
+	private gameMode: GameModesEnum;
 	private graphics: Phaser.GameObjects.Graphics;
 	private startingPoint: { x: number; y: number };
 	private sideLength: number;
-
 	private cells: [
 		GameObjects.Rectangle[],
 		GameObjects.Rectangle[],
 		GameObjects.Rectangle[]
 	];
-
 	private currentChar: string;
 	private grid: [string[], string[], string[]];
-
 	private isGameOver: boolean;
 	private resultText: GameObjects.Text;
 	private pvpButtonText: GameObjects.Text;
@@ -30,8 +28,17 @@ export default class GameScene extends Phaser.Scene {
 	private menuButtonText: GameObjects.Text;
 	private isPvp: boolean;
 	private isDestroyed: boolean;
-
 	events = new Phaser.Events.EventEmitter();
+
+	init(data: GameSceneProps) {
+		console.log(data);
+		this.gameMode = data.gameMode;
+	}
+
+	constructor() {
+		super({ key: 'GameScene' });
+		console.log('GameScene running');
+	}
 
 	create() {
 		this.startingPoint = {
@@ -68,7 +75,7 @@ export default class GameScene extends Phaser.Scene {
 			}
 		}
 
-		this.pvpButtonText = this.add
+		/*this.pvpButtonText = this.add
 			.text(0, 0, '', {
 				fontSize: '32px',
 				color: '#000000',
@@ -88,7 +95,7 @@ export default class GameScene extends Phaser.Scene {
 				fontFamily: 'Arial',
 			})
 			.setInteractive()
-			.on('pointerdown', () => this.startGame(false));
+			.on('pointerdown', () => this.startGame(false));*/
 
 		this.resultText = this.add.text(0, 0, '', {
 			fontSize: '32px',
@@ -121,9 +128,19 @@ export default class GameScene extends Phaser.Scene {
 		// redraw game on changes
 		this.scale.on('resize', this.drawGame, this);
 		this.events.on('charPlaced', this.drawGame, this);
+
+		this.time.delayedCall(500, () => {
+			this.startGame(this.gameMode === GameModesEnum.tttPvp ? true : false);
+		});
 	}
 
-	startGame(isPvp_) {
+	/**
+	 *
+	 * @param isPvp_ true starts the game in pvp mode
+	 */
+	startGame(isPvp_: boolean) {
+		console.log(isPvp_);
+
 		this.isPvp = isPvp_;
 
 		this.grid[0] = ['-', '-', '-'];
@@ -132,10 +149,10 @@ export default class GameScene extends Phaser.Scene {
 
 		this.isGameOver = false;
 
-		this.pvpButtonText.setText('');
+		/*this.pvpButtonText.setText('');
 		this.pvpButtonText.setPadding({ x: 0 });
 		this.pvcButtonText.setText('');
-		this.pvcButtonText.setPadding({ x: 0 });
+		this.pvcButtonText.setPadding({ x: 0 });*/
 		this.resultText.setText('');
 
 		this.currentChar = 'o';
@@ -160,28 +177,47 @@ export default class GameScene extends Phaser.Scene {
 				this.currentChar = 'x';
 			}
 
+			//check results
 			if (!this.isGameOver && this.grid[i][j] === '-') {
 				this.grid[i][j] = this.currentChar;
 				this.checkResult();
 			}
 
+			// if not game over then computer places a character
 			if (!this.isGameOver) {
 				this.currentChar = 'o';
 
-				let i_ = Math.floor(Math.random() * 3);
-				let j_ = Math.floor(Math.random() * 3);
+				if (this.isThereEmptyCell()) {
+					let i_ = Math.floor(Math.random() * 3);
+					let j_ = Math.floor(Math.random() * 3);
 
-				while (this.grid[i_][j_] !== '-') {
-					i_ = Math.floor(Math.random() * 3);
-					j_ = Math.floor(Math.random() * 3);
+					while (this.grid[i_][j_] !== '-') {
+						i_ = Math.floor(Math.random() * 3);
+						j_ = Math.floor(Math.random() * 3);
+					}
+
+					this.grid[i_][j_] = this.currentChar;
 				}
-
-				this.grid[i_][j_] = this.currentChar;
 				this.checkResult();
 			}
 		}
 
 		this.events.emit('charPlaced', this.grid);
+	}
+
+	isThereEmptyCell(): boolean {
+		let result = false;
+
+		this.grid.forEach((rows) =>
+			rows.forEach((cell) => {
+				if (cell === '-') {
+					console.log(cell);
+
+					result = true;
+				}
+			})
+		);
+		return result;
 	}
 
 	drawGame() {
@@ -225,6 +261,12 @@ export default class GameScene extends Phaser.Scene {
 				this.grid[1][1] !== '-')
 		) {
 			this.resultText.setText(`Winner: ${this.currentChar.toUpperCase()}`);
+			this.isGameOver = true;
+			this.drawText();
+		}
+
+		if (!this.isThereEmptyCell()) {
+			this.resultText.setText(`Draw`);
 			this.isGameOver = true;
 			this.drawText();
 		}
@@ -406,7 +448,7 @@ export default class GameScene extends Phaser.Scene {
 
 	drawText() {
 		if (this.isGameOver) {
-			this.pvpButtonText.setText('Player vs Player');
+			/*this.pvpButtonText.setText('Player vs Player');
 			this.pvpButtonText.setBackgroundColor('#0000ff');
 			this.pvpButtonText.setFill('#ffffff');
 			this.pvpButtonText.setPadding({ x: 10 });
@@ -414,25 +456,25 @@ export default class GameScene extends Phaser.Scene {
 			this.pvcButtonText.setText('Player vs Computer');
 			this.pvcButtonText.setBackgroundColor('#ff0000');
 			this.pvcButtonText.setFill('#ffffff');
-			this.pvcButtonText.setPadding({ x: 10 });
+			this.pvcButtonText.setPadding({ x: 10 });*/
 		}
 
-		this.pvpButtonText.setPosition(
+		/*this.pvpButtonText.setPosition(
 			this.startingPoint.x,
 			this.startingPoint.y - 2 * 32
-		);
+		);*/
 
-		this.resultText.setPosition(
+		/*this.resultText.setPosition(
 			this.startingPoint.x + this.pvpButtonText.width + GRIDLINETHICKNESS,
 			this.startingPoint.y - 2 * 32
-		);
+		);*/
 
-		this.pvcButtonText.setPosition(
+		/*this.pvcButtonText.setPosition(
 			this.startingPoint.x +
 				this.pvpButtonText.width +
 				this.resultText.width +
 				2 * GRIDLINETHICKNESS,
 			this.startingPoint.y - 2 * 32
-		);
+		);*/
 	}
 }
