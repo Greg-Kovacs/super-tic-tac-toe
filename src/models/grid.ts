@@ -41,6 +41,22 @@ export default class Grid {
 
 	/**
 	 *
+	 * @returns True if there is any empty space left in the grid.
+	 */
+	isThereEmptyCell(): boolean {
+		let result = false;
+		this.grid.forEach((row) =>
+			row.forEach((cell) => {
+				if (cell === Character.empty) {
+					result = true;
+				}
+			})
+		);
+		return result;
+	}
+
+	/**
+	 *
 	 * @param grid Grid that will be checked.
 	 * @returns True if the game ended and the winner character. If it's a draw the winner will be any empty Character.
 	 */

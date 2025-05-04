@@ -1,3 +1,3 @@
 # super-tic-tac-toe
 
-Run with `npm run start`
+Run with `npm start`

@@ -69,8 +69,13 @@ export default class MenuScene extends Phaser.Scene {
 		}
 
 		this.drawMenu();
-
 		this.scale.on('resize', this.drawMenu, this);
+
+		this.events.on('shutdown', this.shutdown);
+	}
+
+	shutdown() {
+		console.log('shutdown');
 	}
 
 	drawMenu() {
@@ -142,8 +147,8 @@ export default class MenuScene extends Phaser.Scene {
 				console.log('tttPvc');
 				break;
 			case GameModesEnum.tttPvp:
-				this.scene.start('GameScene', { gameMode: GameModesEnum.tttPvp });
-				console.log('tttPvp');
+				this.scene.start('TttGameScene', { gameMode: GameModesEnum.tttPvp });
+				console.log('TttGameScene');
 				break;
 			case GameModesEnum.stttPvc:
 				console.log('stttPvc');
