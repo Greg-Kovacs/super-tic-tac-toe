@@ -1,6 +1,6 @@
 import GameScene from './scenes/gameScene';
 import MenuScene from './scenes/menuScene';
-import tttGameScene from './scenes/tttGameScene';
+import NormalGameScene from './scenes/normalGameScene';
 
 const config = {
 	type: Phaser.AUTO,
@@ -11,7 +11,7 @@ const config = {
 		mode: Phaser.Scale.RESIZE,
 		autoCenter: Phaser.Scale.CENTER_BOTH,
 	},
-	scene: [MenuScene, GameScene, tttGameScene],
+	scene: [MenuScene, GameScene, NormalGameScene],
 };
 
 export default config;

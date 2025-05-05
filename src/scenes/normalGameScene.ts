@@ -8,16 +8,17 @@ import {
 	getXPoints,
 	gridPoints,
 } from '../drawing/drawingCalculator';
+import { Difficulty, getNormalNextStep } from '../ai/ai';
 
 const GRIDLINETHICKNESS = 5;
 const CHARLINETHICKNESS = 20;
 const PADDING = 100;
 
-export default class TttGameScene extends Phaser.Scene {
+export default class NormalGameScene extends Phaser.Scene {
 	private graphics: Phaser.GameObjects.Graphics;
 	private gridMiddlePoint: Point = { x: 0, y: 0 };
 	private gridSideLength: number = 0;
-	private grid = new Grid();
+	private grid: Grid;
 	private currentChar: Character;
 	private cells: [
 		GameObjects.Rectangle[],
@@ -36,7 +37,7 @@ export default class TttGameScene extends Phaser.Scene {
 	}
 
 	constructor() {
-		super({ key: 'TttGameScene' });
+		super({ key: 'NormalGameScene' });
 		console.log('tttpvp ctor');
 	}
 
@@ -48,7 +49,9 @@ export default class TttGameScene extends Phaser.Scene {
 		this.graphics = this.add.graphics({
 			lineStyle: { width: GRIDLINETHICKNESS, color: 0x000000 },
 		});
+		this.graphics.clear();
 		this.cells = [[], [], []];
+		this.grid = new Grid();
 
 		this.menuButtonText = this.add
 			.text(0, 0, 'Menu', {
@@ -85,17 +88,26 @@ export default class TttGameScene extends Phaser.Scene {
 			.on('pointerdown', () => {
 				this.scene.restart();
 			});
+
+		this.resultText = this.add.text(this.scale.width / 2, 10, ' ', {
+			fontSize: '24px',
+			color: '#000000',
+			backgroundColor: '#ffffff',
+			align: 'center',
+			fontFamily: 'Arial',
+		});
+
 		this.currentChar = Character.x;
 
 		this.createClickableCells();
 		this.drawGame();
 		this.time.delayedCall(500, () => {
+			this.isGameOver = false;
 			this.isGameStarted = true;
 		});
 	}
 
 	shutdown() {
-		console.log('shutdown');
 		this.events.off('shutdown', this.shutdown);
 		this.events.off('charPlaced', this.drawGame);
 		this.scale.off('resize', this.drawGame);
@@ -112,10 +124,11 @@ export default class TttGameScene extends Phaser.Scene {
 				: this.scale.height) - PADDING;
 
 		const gridPoints = getGridPoints(midPoint, sideLength, GRIDLINETHICKNESS);
+		this.graphics.clear();
 		this.drawGrid(this.graphics, this.scale, gridPoints);
 		this.drawGridCharacters(this.graphics, gridPoints);
-		this.graphics.strokePath();
 		this.resizeClickableCells(gridPoints);
+		this.drawTextFields(gridPoints);
 	}
 
 	createClickableCells() {
@@ -128,14 +141,12 @@ export default class TttGameScene extends Phaser.Scene {
 
 				rectangle.on('pointerup', () => {
 					this.placeChar(i, j);
-					//console.log(`placed: ${i} ${j}`);
 				});
 			}
 		}
 	}
 
 	placeChar(row: number, cell: number) {
-		console.log(`placeChar: ${row} ${cell}`);
 		if (this.isGameStarted && !this.isGameOver) {
 			try {
 				const { isEnded, winningCharacter } = this.grid.placeCharacter(
@@ -147,14 +158,26 @@ export default class TttGameScene extends Phaser.Scene {
 				this.events.emit('charPlaced');
 				this.isGameOver = isEnded;
 				if (this.isGameOver) {
-					console.log('game over winner:', winningCharacter);
+					this.resultText.setText(
+						`Winner: ${winningCharacter.toString().toUpperCase()}`
+					);
 				}
 
 				this.currentChar =
 					this.currentChar === Character.x ? Character.o : Character.x;
+
+				getNormalNextStep(this.grid.grid, this.currentChar, Difficulty.easy);
 			} catch (error) {}
 		}
-		console.log(this.grid);
+	}
+
+	drawTextFields(gridPoints: gridPoints) {
+		this.resultText.setPosition(
+			gridPoints.borderCorners.topLeft.x +
+				gridPoints.cellSideLength * 1.5 -
+				this.resultText.text.length,
+			10
+		);
 	}
 
 	resizeClickableCells(gridPoints: gridPoints) {

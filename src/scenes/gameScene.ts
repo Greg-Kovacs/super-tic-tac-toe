@@ -448,7 +448,7 @@ export default class GameScene extends Phaser.Scene {
 
 	drawText() {
 		if (this.isGameOver) {
-			/*this.pvpButtonText.setText('Player vs Player');
+			this.pvpButtonText.setText('Player vs Player');
 			this.pvpButtonText.setBackgroundColor('#0000ff');
 			this.pvpButtonText.setFill('#ffffff');
 			this.pvpButtonText.setPadding({ x: 10 });
@@ -456,25 +456,25 @@ export default class GameScene extends Phaser.Scene {
 			this.pvcButtonText.setText('Player vs Computer');
 			this.pvcButtonText.setBackgroundColor('#ff0000');
 			this.pvcButtonText.setFill('#ffffff');
-			this.pvcButtonText.setPadding({ x: 10 });*/
+			this.pvcButtonText.setPadding({ x: 10 });
 		}
 
-		/*this.pvpButtonText.setPosition(
+		this.pvpButtonText.setPosition(
 			this.startingPoint.x,
 			this.startingPoint.y - 2 * 32
-		);*/
+		);
 
-		/*this.resultText.setPosition(
+		this.resultText.setPosition(
 			this.startingPoint.x + this.pvpButtonText.width + GRIDLINETHICKNESS,
 			this.startingPoint.y - 2 * 32
-		);*/
+		);
 
-		/*this.pvcButtonText.setPosition(
+		this.pvcButtonText.setPosition(
 			this.startingPoint.x +
 				this.pvpButtonText.width +
 				this.resultText.width +
 				2 * GRIDLINETHICKNESS,
 			this.startingPoint.y - 2 * 32
-		);*/
+		);
 	}
 }

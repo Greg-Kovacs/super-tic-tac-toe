@@ -1,6 +1,7 @@
 import { Point } from '../models/point';
 
-const CHARACTERPADDING = 20;
+const CHARACTERPADDINGPERCENT = 0.4;
+const CHARACTERPADDING = 30;
 export interface gridPoints {
 	cellStartingPoints: [Point[], Point[], Point[]];
 	cellSideLength: number;
@@ -145,22 +146,29 @@ export function getGridPoints(
 }
 
 export function getXPoints(startingPoint: Point, sideLength: number): xPoints {
+	const centerPoint: Point = {
+		x: startingPoint.x + sideLength / 2,
+		y: startingPoint.y + sideLength / 2,
+	};
+
+	const legLength = sideLength * CHARACTERPADDINGPERCENT;
+
 	return {
 		topLeft: {
-			x: startingPoint.x + CHARACTERPADDING,
-			y: startingPoint.y + CHARACTERPADDING,
+			x: centerPoint.x - legLength,
+			y: centerPoint.y - legLength,
 		},
 		topRight: {
-			x: startingPoint.x + sideLength - CHARACTERPADDING,
-			y: startingPoint.y + CHARACTERPADDING,
+			x: centerPoint.x + legLength,
+			y: centerPoint.y - legLength,
 		},
 		bottomLeft: {
-			x: startingPoint.x + CHARACTERPADDING,
-			y: startingPoint.y + sideLength - CHARACTERPADDING,
+			x: centerPoint.x - legLength,
+			y: centerPoint.y + legLength,
 		},
 		bottomRight: {
-			x: startingPoint.x + sideLength - CHARACTERPADDING,
-			y: startingPoint.y + sideLength - CHARACTERPADDING,
+			x: centerPoint.x + legLength,
+			y: centerPoint.y + legLength,
 		},
 	};
 }
